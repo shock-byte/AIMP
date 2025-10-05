@@ -1,0 +1,29 @@
+# macOS
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Environments
+.env
+.venv/
+venv/
+
+# Build
+build/
+dist/
+
+# Editors/IDE
+.vscode/
+.idea/
+
+# Audio outputs (keep sources elsewhere)
+auto_mix*.wav
+auto_mix*.mp3
+
+
