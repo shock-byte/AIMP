@@ -14,6 +14,9 @@ Professional automix script with spectral‑preserving crossfade, micro‑stretc
 - System library: libsndfile (required by soundfile)
   - macOS: `brew install libsndfile`
   - Ubuntu/Debian: `sudo apt-get install libsndfile1`
+- ffmpeg (required by yt-dlp for audio extraction)
+  - macOS: `brew install ffmpeg`
+  - Ubuntu/Debian: `sudo apt-get install ffmpeg`
 
 Install Python deps:
 
@@ -33,6 +36,15 @@ python3 auto_mix.py
 Edit the call at the bottom of `auto_mix.py` to point to your files or import and call the function in your own script.
 
 Output mix will be written to `auto_mix_pro.wav` or `auto_mix_final.wav` depending on the function used.
+
+### AI search + download workflow
+You can automatically search and download two tracks from YouTube and blend them:
+
+```bash
+python3 -c "from auto_mix import automix_from_queries; automix_from_queries('artist1 song1', 'artist2 song2', out_file='ai_automix.wav')"
+```
+
+Downloads are stored under `downloads/` (git-ignored). Ensure `ffmpeg` is installed.
 
 ## Notes
 - If `gh` (GitHub CLI) is installed, you can create and push a repo with one command (see below).

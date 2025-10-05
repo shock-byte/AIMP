@@ -26,4 +26,7 @@ dist/
 auto_mix*.wav
 auto_mix*.mp3
 
+# Downloads
+downloads/
+
 

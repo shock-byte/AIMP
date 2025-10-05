@@ -7,9 +7,11 @@ Professional Apple-style DJ Automix with spectral-preserving crossfade
 - Optional smooth sidechain drums
 """
 
+import os
 import numpy as np
 import librosa
 import soundfile as sf
+import yt_dlp
 
 # -----------------------
 # Helpers
@@ -61,6 +63,47 @@ def sidechain_smooth(track, drum, attack=0.01, release=0.1, sr=44100, ratio=0.5)
             env[i] = alpha_r * env[i-1] + (1-alpha_r) * drum_env[i]
     gain = 1.0 - env * ratio
     return track * gain
+
+# -----------------------
+# Downloader
+# -----------------------
+def download_audio_from_query(query, out_dir="downloads"):
+    """
+    Search YouTube for the query, download the top result audio, and convert to WAV.
+    Requires ffmpeg to be installed and available in PATH.
+    Returns the path to the downloaded .wav file.
+    """
+    os.makedirs(out_dir, exist_ok=True)
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'outtmpl': os.path.join(out_dir, '%(id)s.%(ext)s'),
+        'noplaylist': True,
+        'quiet': False,
+        'postprocessors': [
+            {
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'wav',
+                'preferredquality': '0',
+            }
+        ],
+    }
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(f"ytsearch1:{query}", download=True)
+        if isinstance(info, dict) and 'entries' in info and info['entries']:
+            info = info['entries'][0]
+        file_id = info.get('id') if isinstance(info, dict) else None
+        if not file_id:
+            raise RuntimeError("Failed to download audio for query: " + query)
+        wav_path = os.path.join(out_dir, f"{file_id}.wav")
+        if not os.path.exists(wav_path):
+            # Some extractors may keep original extension if already wav
+            # Fallback: try to locate any file with this id
+            candidates = [p for p in os.listdir(out_dir) if p.startswith(file_id + ".")]
+            for cand in candidates:
+                if cand.endswith('.wav'):
+                    wav_path = os.path.join(out_dir, cand)
+                    break
+        return wav_path
 
 # -----------------------
 # Automix Function
@@ -148,6 +191,28 @@ def automix_pro(file_a, file_b, out_file,
 
     sf.write(out_file, final, sr)
     print(f"✅ Automix complete: {out_file}, overlap {overlap_len:.2f}s")
+
+def automix_from_queries(query_a, query_b, out_file,
+                         bars_overlap=8,
+                         beats_per_bar=4,
+                         drum_file=None,
+                         drum_db=-12.0,
+                         sidechain=True):
+    """
+    End-to-end: search+download two queries and automix them like Apple Music.
+    """
+    file_a = download_audio_from_query(query_a)
+    file_b = download_audio_from_query(query_b)
+    automix_pro(
+        file_a=file_a,
+        file_b=file_b,
+        out_file=out_file,
+        bars_overlap=bars_overlap,
+        beats_per_bar=beats_per_bar,
+        drum_file=drum_file,
+        drum_db=drum_db,
+        sidechain=sidechain,
+    )
 
 # -----------------------
 # Run script
