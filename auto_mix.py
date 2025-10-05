@@ -218,13 +218,44 @@ def automix_from_queries(query_a, query_b, out_file,
 # Run script
 # -----------------------
 if __name__ == "__main__":
-    automix_pro(
-        file_a="Thodi Si Daaru.wav",
-        file_b="Sahiba.wav",
-        out_file="auto_mix_pro.wav",
-        bars_overlap=8,
-        beats_per_bar=4,
-        drum_file="IVS.wav",
-        drum_db=-12.0,
-        sidechain=True
-    )
+    import argparse
+
+    parser = argparse.ArgumentParser(description="Apple-style DJ Automix: local files or YouTube queries")
+    src = parser.add_mutually_exclusive_group(required=True)
+    src.add_argument("--files", nargs=2, metavar=("FILE_A", "FILE_B"), help="Two local audio files to blend")
+    src.add_argument("--queries", nargs=2, metavar=("QUERY_A", "QUERY_B"), help="Two search queries to fetch from YouTube")
+
+    parser.add_argument("--out", default="auto_mix.wav", help="Output WAV path (default: auto_mix.wav)")
+    parser.add_argument("--bars-overlap", type=int, default=8, help="Number of bars to overlap (default: 8)")
+    parser.add_argument("--beats-per-bar", type=int, default=4, help="Beats per bar for detection (default: 4)")
+    parser.add_argument("--drum-file", default=None, help="Optional drum loop WAV/MP3 to underlay and sidechain against")
+    parser.add_argument("--drum-db", type=float, default=-12.0, help="Drum loop level in dB (default: -12.0)")
+    parser.add_argument("--no-sidechain", action="store_true", help="Disable smooth sidechain ducking")
+
+    args = parser.parse_args()
+    sidechain_enabled = not args.no_sidechain
+
+    if args.files:
+        file_a, file_b = args.files
+        automix_pro(
+            file_a=file_a,
+            file_b=file_b,
+            out_file=args.out,
+            bars_overlap=args.bars_overlap,
+            beats_per_bar=args.beats_per_bar,
+            drum_file=args.drum_file,
+            drum_db=args.drum_db,
+            sidechain=sidechain_enabled,
+        )
+    else:
+        query_a, query_b = args.queries
+        automix_from_queries(
+            query_a=query_a,
+            query_b=query_b,
+            out_file=args.out,
+            bars_overlap=args.bars_overlap,
+            beats_per_bar=args.beats_per_bar,
+            drum_file=args.drum_file,
+            drum_db=args.drum_db,
+            sidechain=sidechain_enabled,
+        )

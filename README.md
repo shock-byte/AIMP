@@ -27,21 +27,22 @@ pip install -r requirements.txt
 ```
 
 ## Usage
-Place or reference your audio files (WAV/MP3). Then run:
+Run via CLI with either local files or YouTube queries:
 
 ```bash
-python3 auto_mix.py
+# Local files
+python3 auto_mix.py --files "Song A.wav" "Song B.wav" --out mix.wav --bars-overlap 8 --beats-per-bar 4 --drum-file IVS.wav --drum-db -12
+
+# YouTube queries (requires ffmpeg)
+python3 auto_mix.py --queries "artist1 song1" "artist2 song2" --out ai_mix.wav
 ```
 
-Edit the call at the bottom of `auto_mix.py` to point to your files or import and call the function in your own script.
+Programmatic usage:
 
-Output mix will be written to `auto_mix_pro.wav` or `auto_mix_final.wav` depending on the function used.
-
-### AI search + download workflow
-You can automatically search and download two tracks from YouTube and blend them:
-
-```bash
-python3 -c "from auto_mix import automix_from_queries; automix_from_queries('artist1 song1', 'artist2 song2', out_file='ai_automix.wav')"
+```python
+from auto_mix import automix_pro, automix_from_queries
+automix_pro("a.wav", "b.wav", out_file="mix.wav")
+automix_from_queries("query A", "query B", out_file="mix.wav")
 ```
 
 Downloads are stored under `downloads/` (git-ignored). Ensure `ffmpeg` is installed.
